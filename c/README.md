@@ -2,7 +2,9 @@
 
 ​		这学期学校开设了操作系统的课程，但是内容比较浅显基础，我认为操作系统作为程序员的基本功之一，比较重要，也就想自己多学点，就想用**c语言**写一个在**linux操作系统**上的**shell**，顺便复习一下大一学的c语言，也在用**《c和指针》**去复习，不得不说，这本书确实写的不错，当然，对初学者不是那么友好，有一定基础的人可以去看，很不错。
 
- 		最后，这篇文章里的代码可以在[这里](<https://gitee.com/BMooS/myshell>)(gitee)或者[这里](https://github.com/BMooS/master)(github)看到。顺便说一下，作者再写这个程序时候只是一个在读学生，有些错误和粗浅之处，欢迎大家指正，谢谢大家。
+最后，这篇文章里的代码可以在[这里](<https://gitee.com/BMooS/myshell>) (gitee)或者[这里](https://github.com/BMooS/master) (github)看到。
+
+顺便说一下，作者再写这个程序时候只是一个在读学生，有些错误和粗浅之处，欢迎大家指正，谢谢大家。
 
 # 如何实现shell 以及整体框架
 
@@ -29,17 +31,13 @@
   ```c
   int main(){
   	//配置文件
-      
       //循环运行执行程序
       my_shell_loop();
-      
       //shell程序退出
-      
      	return EXIT_SUCCESS
-   
   }
   ```
-
+  
   
 
 这里我们用循环去实现shell程序的主体部分，但shell程序不仅仅只有循环。
@@ -150,10 +148,6 @@ free(line);
   
    line = readline(BEGIN(49, 34)"Myshell->  "CLOSE);//使用一点宏定义简化一些复杂性
   ```
-
-效果如下：
-
-![UTOOLS1576411800363.png](https://i.loli.net/2019/12/15/78nbjUHFfsIBSQZ.png)
 
 这样就好看多了
 
@@ -532,8 +526,6 @@ WIFSIGNALED(status)若子进程返回的状态为异常结束,则为真。
 
 > Shell的一种功能，就是可以将两个或者多个命令（程序或者进程）连接到一起，把一个命令的输出作为下一个命令的输入，以这种方式连接的两个或者多个命令就形成了**管道（pipe）**。
 
-![1Cjs5d.png](https://s2.ax1x.com/2020/01/19/1Cjs5d.png)
-
 Linux 管道使用竖线 | 连接多个命令，这被称为管道符。Linux 管道的具体语法格式如下：
 
 ~~~c
@@ -729,8 +721,6 @@ int dup2(int oldfd, int newfd);
 
 现在我们构造好了一个简易的管道功能：
 
-![1iUa0s.png](https://s2.ax1x.com/2020/01/20/1iUa0s.png)
-
 ## 输出重定向
 
 一般情况下，每个 Linux 命令运行时都会打开三个文件：
@@ -812,13 +802,5 @@ int commandWithRedi(char* line) { //可能含有重定向
 ~~~
 
 在函数中我们用字符指针onFile对输出重定向的文件名进行标记，同时用到endIdx作为哨兵，记录重定向符>的位置，并在该位置上赋值'\0'，对执行命令的处理，用到freopen对标准输入stdout以写的方式重定向到onFile处。
-
-实现：
-
-![1EEFbD.png](https://s2.ax1x.com/2020/01/22/1EEFbD.png)
-
-同时在1.txt文件中：
-
-![1EE3Vg.png](https://s2.ax1x.com/2020/01/22/1EE3Vg.png)
 
 则上述就简单实现了输出重定向功能。
