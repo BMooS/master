@@ -242,29 +242,16 @@ int commandwithpipe(char *line){
     } else { // 父进程递归执行后续命令
         int status;
         waitpid(pid, &status, 0);
-        int exitCode = WEXITSTATUS(status);
 
-        if (exitCode != 0) { // 子进程的指令没有正常退出，打印错误信息
-            char info[4096] = {0};
-            char line1[4096];
-            close(fds[1]);
-            dup2(fds[0], STDIN_FILENO); // 将标准输入重定向到fds[0]
-            while(fgets(line1, 4096, stdin) != NULL) { // 读取子进程的错误信息
-                strcat(info, line);
-            }
-            printf("%s", info); // 打印错误信息
-            close(fds[0]);
-            result = exitCode;
-        } else{
-            close(fds[1]);
-            dup2(fds[0], STDIN_FILENO); // 将标准输入重定向到fds[0]
-            close(fds[0]);
-            char *new_str = cut_str(pipeIdx + 2,strlen(line),line);
-            char **simple_line = cut_line(new_str);
-            result = execute(simple_line);
-            free(new_str);
-            free(simple_line);
-        }
+        close(fds[1]);
+        dup2(fds[0], STDIN_FILENO); // 将标准输入重定向到fds[0]
+        close(fds[0]);
+        char *new_str = cut_str(pipeIdx + 2,strlen(line),line);
+        char **simple_line = cut_line(new_str);
+        result = execute(simple_line);
+        free(new_str);
+        free(simple_line);
+
     }
 
     return result;
@@ -272,21 +259,12 @@ int commandwithpipe(char *line){
 }
 
 int commandWithRedi(char* line) { //可能含有重定向
-    int inNum = 0, outNum = 0;
-    char *inFile = NULL, *outFile = NULL;
+    int outNum = 0;
+    char *outFile = NULL;
     int endIdx = strlen(line); // 指令在重定向前的终止下标
 
     for (int i = 0; i < strlen(line); i++) {
-        if (line[i] == '<') { // 输入重定向
-            inNum++;
-            if (i+1 < strlen(line)){
-                inFile = &line[i+1];
-            }
-            else{
-                printf("Parameters are missing\n");
-            }
-            endIdx = i;
-        } else if (line[i] == '>') { // 输出重定向
+        if (line[i] == '>') { // 输出重定向
             outNum++;
             if (i+1 < strlen(line))
                 outFile = &line[i+1];
@@ -297,17 +275,7 @@ int commandWithRedi(char* line) { //可能含有重定向
         }
     }
     /* 处理重定向 */
-    if (inNum == 1) {
-        FILE* fp = fopen(inFile, "r");
-        if (fp == NULL) // 输入重定向文件不存在
-            printf("The input file does not exist\n");
-            return 1;
-    }
-
-    if (inNum > 1) { // 输入重定向符超过一个
-        printf("Iutput redirection more than one\n");
-        return 1;
-    } else if (outNum > 1) { // 输出重定向符超过一个
+    if (outNum > 1) { // 输出重定向符超过一个
         printf("Output redirection more than one\n");
         return 1;
     }
@@ -318,11 +286,9 @@ int commandWithRedi(char* line) { //可能含有重定向
         result = 0;
     } else if (pid == 0) {
         /* 输入输出重定向 */
-        if (inNum == 1)
-            freopen(inFile, "r", stdin);
-        if (outNum == 1)
+        if (outNum == 1){
             freopen(outFile, "w", stdout);
-
+        }
         /* 执行命令 */
         line[endIdx] = '\0';
         char** char_list = cut_line(line);
@@ -355,7 +321,7 @@ int execute_line(char *line){
         }
     }
     for (int j = 0; j < strlen(line); j++){
-        if (line[j] == '<' || line[j] == '>'){
+        if (line[j] == '>'){
             sample = commandWithRedi(line);
             return sample;
         }
